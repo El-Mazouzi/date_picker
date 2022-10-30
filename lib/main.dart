@@ -1,4 +1,4 @@
-import 'package:date_picker/calendar_popup_view.dart';
+import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,15 +9,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.lightBlue,
+        brightness: Brightness.light,
+        primarySwatch: Colors.purple,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
@@ -30,8 +30,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now().add(const Duration(days: 5));
+  DateTime? startDate;
+  DateTime? endDate;
 
   @override
   Widget build(BuildContext context) {
@@ -53,13 +53,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  Text(
+                  const Text(
                     'Choose a date Range',
                     style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20, color: Colors.black),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    '${DateFormat("dd, MMM").format(startDate)} - ${DateFormat("dd, MMM").format(endDate)}',
+                    '${startDate != null ? DateFormat("dd, MMM").format(startDate!) : '-'} / ${endDate != null ? DateFormat("dd, MMM").format(endDate!) : '-'}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 18,
@@ -74,30 +74,29 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          FocusScope.of(context).requestFocus(FocusNode());
-
-          showDemoDialog(context: context);
+          showCustomDateRangePicker(
+            context,
+            dismissible: true,
+            endDate: endDate,
+            startDate: startDate,
+            maximumDate: DateTime.now().add(const Duration(days: 50)),
+            minimumDate: DateTime.now().subtract(const Duration(days: 50)),
+            onApplyClick: (s, e) {
+              setState(() {
+                endDate = e;
+                startDate = s;
+              });
+            },
+            onCancelClick: () {
+              setState(() {
+                endDate = null;
+                startDate = null;
+              });
+            },
+          );
         },
         tooltip: 'choose date Range',
         child: const Icon(Icons.calendar_today_outlined, color: Colors.white),
-      ),
-    );
-  }
-
-  void showDemoDialog({BuildContext? context}) {
-    showDialog<dynamic>(
-      context: context!,
-      builder: (BuildContext context) => CalendarPopupView(
-        barrierDismissible: true,
-        minimumDate: DateTime.now(),
-        initialEndDate: endDate,
-        initialStartDate: startDate,
-        onApplyClick: (DateTime startData, DateTime endData) {
-          setState(() {
-            startDate = startData;
-            endDate = endData;
-          });
-        },
       ),
     );
   }
